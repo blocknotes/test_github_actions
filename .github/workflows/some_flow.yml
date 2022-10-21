@@ -1,0 +1,87 @@
+---
+name: Auto comment
+
+on:
+  pull_request:
+    # branches: [main]
+    types: [opened, synchronize]
+
+  # pull_request:
+  #  types: [opened, edited, synchronize, reopened]
+
+  # push:
+  # pull_request_target:
+  #   types: [opened]
+
+jobs:
+  recreate-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recreate comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const GITHUB_ACTIONS_BOT = 41898282
+
+            const {data: comments} = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number
+            })
+
+            // Find any comment already made by the bot
+            const botComment = comments.find(comment => comment.user.id === GITHUB_ACTIONS_BOT)
+
+            if (botComment) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              })
+            }
+
+            const commentBody = "Test comment (${{ github.sha }}) 🚀"
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number,
+              body: commentBody
+            })
+
+            // if (botComment) {
+            //   await github.rest.issues.updateComment({
+            //     owner: context.repo.owner,
+            //     repo: context.repo.repo,
+            //     comment_id: botComment.id,
+            //     body: commentBody
+            //   })
+            // } else {
+            //   await github.rest.issues.createComment({
+            //     owner: context.repo.owner,
+            //     repo: context.repo.repo,
+            //     issue_number: context.payload.number,
+            //     body: commentBody
+            //   })
+            // }
+
+
+      # OK
+      # const comments = await github.rest.issues.listComments({
+      #   owner: context.repo.owner,
+      #   repo: context.repo.repo,
+      #   issue_number: context.issue.number
+      # })
+      # console.log(comments)
+
+
+      # - name: Leave a message
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       //  context.issue.number
+      #       github.rest.issues.createComment({
+      #         issue_number: github.event.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: 'Test comment 🚀'
+      #       })
