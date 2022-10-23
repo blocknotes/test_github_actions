@@ -1,0 +1,19 @@
+---
+name: Update README
+
+on:
+  push:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: muesli/readme-scribe@master
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        with:
+          template: "README.md.tpl"
+          writeTo: "README.md"
