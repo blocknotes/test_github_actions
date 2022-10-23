@@ -16,11 +16,28 @@ on:
 jobs:
   recreate-comment:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Some step
+        id: some_step
+        run: |
+          # export TEST_OUT=`ls -l | xargs`
+          # export TEST_OUT="line 1<br/>line 2<br/>line 3"
+          export TEST_OUT=`ls -l`
+          echo $TEST_OUT
+          echo "test_out=${TEST_OUT//$'\n'/<br />}" >> $GITHUB_OUTPUT
+
       - name: Recreate comment
         uses: actions/github-script@v6
+        env:
+          TEST_OUT: ${{ steps.some_step.outputs.test_out }}
         with:
           script: |
+            console.log(process.env.TEST_OUT)
+
             const GITHUB_ACTIONS_BOT = 41898282
 
             const {data: comments} = await github.rest.issues.listComments({
@@ -40,7 +57,7 @@ jobs:
               })
             }
 
-            const commentBody = "Test comment (${{ github.sha }}) 🚀"
+            const commentBody = `Test comment (${{ github.sha }}) 🚀<br/><pre>${process.env.TEST_OUT}</pre>`
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
