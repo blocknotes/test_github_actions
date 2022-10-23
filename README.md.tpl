@@ -4,4 +4,4 @@ A test project with some GitHubActions
 
 ---
 
-_Updated at &lt;nil&gt;_
+_Updated at {{humanize .Timestamp}}_
