@@ -1,0 +1,113 @@
+---
+name: Auto comment
+
+on:
+  pull_request:
+    # branches: [main]
+    types: [opened, synchronize]
+
+  # pull_request:
+  #  types: [opened, edited, synchronize, reopened]
+
+  # push:
+  # pull_request_target:
+  #   types: [opened]
+
+jobs:
+  auto-comment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Tags list
+        id: some_step
+        run: |
+          # export TEST_OUT=`ls -l | xargs`
+          # export TEST_OUT="line 1<br/>line 2<br/>line 3"
+          # export TEST_OUT=`ls -l`
+          export TEST_OUT="List of tags:"
+          echo $TEST_OUT
+          echo "test_out=${TEST_OUT//$'\n'/<br />}" >> $GITHUB_OUTPUT
+
+      - name: Recreate comment
+        uses: actions/github-script@v6
+        env:
+          TEST_OUT: ${{ steps.some_step.outputs.test_out }}
+        with:
+          script: |
+            const {data: tags} = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            const tagsList = tags.map(tag => tag.name)
+
+            console.log(tagsList)
+
+            const GITHUB_ACTIONS_BOT = 41898282
+
+            const {data: comments} = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number
+            })
+
+            // Find any comment already made by the bot
+            const botComment = comments.find(comment => comment.user.id === GITHUB_ACTIONS_BOT)
+
+            if (botComment) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              })
+            }
+
+            const TAG_URL = 'https://github.com/blocknotes/test_github_actions/releases/tag/'
+            const tagDetails = tagsList.map(tag => `<li><a href="${TAG_URL}${tag}">${tag}</a></li>`).join()
+            const commentBody = `<i>Commit ${{ github.sha }}</i><h4>${process.env.TEST_OUT}</h4><ul>${tagDetails}</ul>`
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.number,
+              body: commentBody
+            })
+
+            // if (botComment) {
+            //   await github.rest.issues.updateComment({
+            //     owner: context.repo.owner,
+            //     repo: context.repo.repo,
+            //     comment_id: botComment.id,
+            //     body: commentBody
+            //   })
+            // } else {
+            //   await github.rest.issues.createComment({
+            //     owner: context.repo.owner,
+            //     repo: context.repo.repo,
+            //     issue_number: context.payload.number,
+            //     body: commentBody
+            //   })
+            // }
+
+
+      # OK
+      # const comments = await github.rest.issues.listComments({
+      #   owner: context.repo.owner,
+      #   repo: context.repo.repo,
+      #   issue_number: context.issue.number
+      # })
+      # console.log(comments)
+
+
+      # - name: Leave a message
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       //  context.issue.number
+      #       github.rest.issues.createComment({
+      #         issue_number: github.event.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: 'Test comment 🚀'
+      #       })
