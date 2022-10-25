@@ -65,7 +65,7 @@ jobs:
             }
 
             const TAG_URL = 'https://github.com/blocknotes/test_github_actions/releases/tag/'
-            const tagDetails = tagsList.map(tag => `<li><a href="${TAG_URL}${tag}">${tag}</a></li>`).join()
+            const tagDetails = tagsList.map(tag => `<li><a href="${TAG_URL}${tag}">${tag}</a></li>`).join('')
             const commentBody = `<i>Commit ${{ github.sha }}</i><h4>${process.env.TEST_OUT}</h4><ul>${tagDetails}</ul>`
             github.rest.issues.createComment({
               owner: context.repo.owner,
