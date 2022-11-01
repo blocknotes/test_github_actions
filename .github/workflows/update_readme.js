@@ -1,22 +1,23 @@
 const fs = require('fs')
 
 module.exports = async ({github, context, core}) => {
-  const target_file = core.getInput("file", { required: true })
+  const targetFile = process.env.TARGET_FILE // core.getInput("file")
+  const boundaryLine = process.env.BOUNDARY_LINE
+  const content = process.env.CONTENT // core.getInput("content")
 
-  fs.readFile(target_file, 'utf8', function(err, data) {
+  fs.readFile(targetFile, 'utf8', function(err, data) {
     if (err) throw err
 
-    const extra_content = 'Here it is some new content!'
-    const pos = data.indexOf('### auto-update section')
+    const pos = data.indexOf(boundaryLine)
     if(pos == -1) throw 'Boundary line not found'
 
-    const new_data = `${data.substring(0, pos)}### auto-update section\n\n${extra_content}`
+    const new_data = `${data.substring(0, pos)}${boundaryLine}\n\n${content}`
     console.log(new_data)
 
-    fs.writeFile(target_file, new_data, function (err) {
+    fs.writeFile(targetFile, new_data, function (err) {
       if (err) throw err
 
-      console.log(`${target_file} updated`)
+      console.log(`${targetFile} updated`)
     })
   })
 }

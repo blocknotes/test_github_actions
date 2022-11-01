@@ -1,3 +1,7 @@
-# test_github_actions
+# Test GitHub Actions
 
-### auto-update section
+Some GH Action experiments.
+
+---
+
+### Auto generated content
