@@ -1,0 +1,50 @@
+---
+name: Update README
+
+on:
+  pull_request:
+    # branches: [main]
+    types: [opened, synchronize]
+
+  # pull_request:
+  #  types: [opened, edited, synchronize, reopened]
+
+  # push:
+  # pull_request_target:
+  #   types: [opened]
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Update README.md
+        uses: actions/github-script@v6
+        with:
+          file: README.md
+          script: |
+            const script = require('./.github/workflows/update_readme.js')
+            await script({github, context, core})
+
+      - name: Auto commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Update README.md [CI]'
+
+# const core = require("@actions/core");
+# const fs = require("fs").promises;
+# const { join } = require("path");
+
+# const main = async () => {
+  # const path = core.getInput("file", { required: true });
+  # const scriptPath = core.getInput("script", { required: true });
+  # console.log("files:", await fs.readdir(process.cwd()));
+  # const fn = require(join(process.cwd(), scriptPath));
+  # const fileContent = await fs.readFile(path, { encoding: "utf-8" });
+  # const result = await fn(fileContent);
+  # core.setOutput("result", result);
+  # await fs.writeFile(path, result, { encoding: "utf-8" });
+# };
