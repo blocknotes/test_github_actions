@@ -1,0 +1,53 @@
+---
+name: Update README
+
+on:
+  push:
+    branches:
+      - main
+
+  # pull_request:
+  #   types: [opened, synchronize]
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Tags
+        uses: actions/github-script@v6
+        id: tags
+        with:
+          script: |
+            const {data: tags} = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            const tagNames = tags.map(tag => tag.name)
+
+            console.log(tagNames)
+
+            const TAG_URL = 'https://github.com/blocknotes/test_github_actions/releases/tag/'
+            const tagsList = tagNames.map(tag => `- <a href="${TAG_URL}${tag}">${tag.replaceAll('_', ' ')}</a>`).join("\n")
+            core.setOutput('tagsList', tagsList)
+
+      - name: Update README.md
+        uses: actions/github-script@v6
+        env:
+          TARGET_FILE: README.md
+          BOUNDARY_LINE: '### Auto generated content'
+          CONTENT: ${{ steps.tags.outputs.tagsList }}
+        with:
+          # file: README.md
+          # content: ${{ steps.tags.outputs.tagsList }}
+          script: |
+            const script = require('./.github/workflows/update_readme.js')
+            await script({github, context, core})
+
+      - name: Auto commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Update README.md [CI]'
