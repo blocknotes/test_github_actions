@@ -41,7 +41,8 @@ jobs:
           BOUNDARY_LINE: '### Auto generated content'
           CONTENT: ${{ steps.tags.outputs.tagsList }}
         with:
-          # file: README.md
+          # target_file: README.md
+          # boundary_line: '### Auto generated content'
           # content: ${{ steps.tags.outputs.tagsList }}
           script: |
             const script = require('./.github/workflows/update_readme.js')
