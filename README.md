@@ -1,6 +1,6 @@
 # Test GitHub Actions
 
-Some GH Action experiments.
+Some GH Action experiments...
 
 ---
 
